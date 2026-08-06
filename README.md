@@ -12,7 +12,7 @@ Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kan
 - **IME propio**: escribe en romaji y se convierte a kana en tiempo real. Acepta variantes comunes (`shi`/`si`, `chi`/`ti`, `fu`/`hu`, `ja`/`jya`/`zya`…), sokuon (っ), yōon (きゃ) y vocales largas (ー con `-` o vocal doble).
 - **Rastro de romaji**: lo que tecleas se acumula bajo la palabra y no se borra hasta la siguiente.
 - **6 idiomas** de interfaz y de traducciones: español, English, français, Deutsch, português, italiano.
-- **Vocabulario JLPT completo N5–N1**: 8.087 palabras (N5 717 · N4 666 · N3 2.126 · N2 1.890 · N1 2.688) del dataset abierto [open-anki-jlpt-decks](https://github.com/jamsinclair/open-anki-jlpt-decks) (MIT), con significados en inglés. Cada nivel se carga bajo demanda.
+- **Vocabulario JLPT completo N5–N1**: 8.087 palabras (N5 717 · N4 666 · N3 2.126 · N2 1.890 · N1 2.688) del dataset abierto [open-anki-jlpt-decks](https://github.com/jamsinclair/open-anki-jlpt-decks) (MIT), con significados en inglés y en **español al 98%** (7.963/8.087, vía [jmdict-simplified](https://github.com/scriptin/jmdict-simplified) / JMdict-EDRDG). El resto recae automáticamente en inglés. Cada nivel se carga bajo demanda.
 - **Set básico curado**: 157 palabras en 11 categorías con traducciones a los 6 idiomas.
 - **Versión móvil**: toca la pantalla para invocar el teclado y escribe igual que en escritorio; botones táctiles para saltar/revelar.
 - **Ultra personalizable**: nivel (Básico/N5–N1), silabario, categorías, modo memoria (kana oculto), kanji on/off, avance automático, tamaño de texto, color de acento, rastro de romaji on/off.
@@ -69,5 +69,5 @@ Cada push a `main` ejecuta el workflow de GitHub Actions: tests → build → pu
 ## Añadir palabras o idiomas
 
 - **Palabras básicas**: añade una entrada en `src/core/words/data.ts` (`kana`, `kanji`, `category`, `translations`).
-- **JLPT**: los JSON de `src/core/words/jlpt/` se regeneran con `scripts/build-jlpt.ts` a partir de los CSV de open-anki-jlpt-decks.
+- **JLPT**: los JSON de `src/core/words/jlpt/` se regeneran con `scripts/build-jlpt.ts` a partir de los CSV de open-anki-jlpt-decks, y luego se enriquecen con español ejecutando `scripts/enrich-spanish.ts <ruta-a-jmdict-spa.json>` (el JSON en español de jmdict-simplified, publicado en sus [releases](https://github.com/scriptin/jmdict-simplified/releases/latest)).
 - **Idiomas**: añade el código en `src/core/i18n/types.ts` (`LANGUAGES`), el diccionario en `dictionaries.ts` y la traducción en cada palabra de `data.ts` — TypeScript te marcará todo lo que falte.

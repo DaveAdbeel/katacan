@@ -14,6 +14,8 @@ export interface JlptEntry {
   j: string | null
   /** Significado en inglés */
   m: string
+  /** Significado en español (de jmdict-simplified/JMdict), si se encontró */
+  s?: string
 }
 
 const LOADERS: Record<JlptLevel, () => Promise<{ default: JlptEntry[] }>> = {

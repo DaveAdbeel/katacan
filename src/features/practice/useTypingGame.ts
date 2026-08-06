@@ -130,7 +130,7 @@ export function useTypingGame() {
             kana: e.k,
             kanji: e.j,
             level,
-            meanings: { en: e.m },
+            meanings: e.s ? { en: e.m, es: e.s } : { en: e.m },
           })),
         ),
       )

@@ -1,8 +1,7 @@
-/* ============================================================
- * i18n.js — textos de interfaz de katacan en 6 idiomas
- * ============================================================ */
+/** Textos de interfaz de katacan en 6 idiomas. */
+import type { LanguageCode, UiStrings } from './types'
 
-const I18N = {
+export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
   es: {
     _name: 'Español',
     tagline: 'práctica de escritura japonesa',
@@ -26,9 +25,11 @@ const I18N = {
     aaNormal: 'Normal',
     aaSlow: 'Lento',
     fontSize: 'Tamaño del texto',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
     accent: 'Color de acento',
-    showBuffer: 'Mostrar letras escritas',
+    showRomajiTrace: 'Mostrar romaji escrito',
     stats: 'Estadísticas',
     statsWords: 'palabras',
     statsAccuracy: 'precisión',
@@ -71,9 +72,11 @@ const I18N = {
     aaNormal: 'Normal',
     aaSlow: 'Slow',
     fontSize: 'Text size',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
     accent: 'Accent color',
-    showBuffer: 'Show typed letters',
+    showRomajiTrace: 'Show typed romaji',
     stats: 'Statistics',
     statsWords: 'words',
     statsAccuracy: 'accuracy',
@@ -95,7 +98,7 @@ const I18N = {
   },
   fr: {
     _name: 'Français',
-    tagline: "pratique de l'écriture japonaise",
+    tagline: 'pratique de l\'écriture japonaise',
     hint: 'Écris en romaji — converti en kana automatiquement',
     keySkip: 'Espace · passer le mot',
     keyReveal: 'Tab · révéler',
@@ -116,9 +119,11 @@ const I18N = {
     aaNormal: 'Normal',
     aaSlow: 'Lent',
     fontSize: 'Taille du texte',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
-    accent: "Couleur d'accent",
-    showBuffer: 'Afficher les lettres tapées',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
+    accent: 'Couleur d\'accent',
+    showRomajiTrace: 'Afficher le romaji tapé',
     stats: 'Statistiques',
     statsWords: 'mots',
     statsAccuracy: 'précision',
@@ -161,9 +166,11 @@ const I18N = {
     aaNormal: 'Normal',
     aaSlow: 'Langsam',
     fontSize: 'Textgröße',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
     accent: 'Akzentfarbe',
-    showBuffer: 'Getippte Buchstaben anzeigen',
+    showRomajiTrace: 'Getipptes Romaji anzeigen',
     stats: 'Statistiken',
     statsWords: 'Wörter',
     statsAccuracy: 'Genauigkeit',
@@ -206,9 +213,11 @@ const I18N = {
     aaNormal: 'Normal',
     aaSlow: 'Lento',
     fontSize: 'Tamanho do texto',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
     accent: 'Cor de destaque',
-    showBuffer: 'Mostrar letras digitadas',
+    showRomajiTrace: 'Mostrar romaji digitado',
     stats: 'Estatísticas',
     statsWords: 'palavras',
     statsAccuracy: 'precisão',
@@ -251,9 +260,11 @@ const I18N = {
     aaNormal: 'Normale',
     aaSlow: 'Lento',
     fontSize: 'Dimensione del testo',
-    sizeS: 'S', sizeM: 'M', sizeL: 'L',
+    sizeS: 'S',
+    sizeM: 'M',
+    sizeL: 'L',
     accent: 'Colore di accento',
-    showBuffer: 'Mostra lettere digitate',
+    showRomajiTrace: 'Mostra romaji digitato',
     stats: 'Statistiche',
     statsWords: 'parole',
     statsAccuracy: 'precisione',
@@ -273,6 +284,4 @@ const I18N = {
     categories_verbs: 'Verbi',
     categories_adjectives: 'Aggettivi',
   },
-};
-
-if (typeof module !== 'undefined') module.exports = I18N;
+}

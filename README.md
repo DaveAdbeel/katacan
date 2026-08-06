@@ -2,22 +2,18 @@
 
 Práctica minimalista de escritura japonesa en **hiragana** y **katakana**, inspirada en [flowtype.ai](https://www.flowtype.ai/) pero más personalizable y con más idiomas.
 
-Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kana usando romaji (se convierte automáticamente, como un IME). El kanji se muestra justo debajo. **Nunca se muestra el romaji de la palabra** — la idea es memorizar de verdad.
+**En vivo: https://daveadbeel.github.io/katacan/**
+
+Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kana usando romaji (se convierte automáticamente, como un IME). El kanji se muestra justo debajo, y el romaji que vas tecleando queda visible hasta la siguiente palabra. **Nunca se muestra el romaji de la palabra como pista** — la idea es memorizar de verdad.
 
 ## Características
 
 - **Sin pistas de romaji**: solo el significado, el kana y el kanji.
 - **IME propio**: escribe en romaji y se convierte a kana en tiempo real. Acepta variantes comunes (`shi`/`si`, `chi`/`ti`, `fu`/`hu`, `ja`/`jya`/`zya`…), sokuon (っ), yōon (きゃ) y vocales largas (ー con `-` o vocal doble).
+- **Rastro de romaji**: lo que tecleas se acumula bajo la palabra y no se borra hasta la siguiente.
 - **6 idiomas** de interfaz y de traducciones: español, English, français, Deutsch, português, italiano.
 - **157 palabras** en 11 categorías: animales, comida, naturaleza, cuerpo, familia, tiempo, colores, objetos, lugares, verbos y adjetivos.
-- **Ultra personalizable**:
-  - Filtro por silabario: hiragana, katakana o ambos
-  - Selección de categorías
-  - Modo memoria: el kana se oculta y escribes solo a partir del significado (Tab para revelar)
-  - Kanji visible u oculto
-  - Avance automático (manual / rápido / normal / lento)
-  - Tamaño del texto y color de acento
-  - Mostrar u ocultar las letras que llevas escritas
+- **Ultra personalizable**: silabario, categorías, modo memoria (kana oculto), kanji on/off, avance automático, tamaño de texto, color de acento, rastro de romaji on/off.
 - **Estadísticas persistentes**: palabras completadas, precisión y racha (localStorage).
 - **Dark mode únicamente**, estilo minimalista.
 
@@ -30,30 +26,45 @@ Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kan
 | `Tab` | Revelar kana (en modo memoria) |
 | `Esc` | Abrir/cerrar ajustes |
 
-## Uso
+## Stack
 
-Es una web 100 % estática, sin build ni dependencias:
+React 19 · TypeScript · Tailwind CSS 4 · Vite 8 · Vitest
 
 ```bash
-# cualquier servidor estático sirve
-npx serve .
-# o simplemente abre index.html en el navegador
+npm install
+npm run dev      # servidor de desarrollo
+npm test         # tests del motor de kana (vitest)
+npm run build    # typecheck + build de producción en dist/
+npm run preview  # sirve el build localmente
 ```
 
-Deployable directamente en GitHub Pages, Netlify, Vercel, etc.
+## Arquitectura
 
-## Estructura
+Organización *feature-based*: un núcleo puro sin React y las funcionalidades agrupadas por dominio, cada una con sus componentes, hooks y tipos.
 
 ```
-index.html      — página única
-style.css       — tema dark minimalista
-js/kana.js      — motor romaji → kana (tokenizador + matcher incremental)
-js/words.js     — vocabulario con traducciones a 6 idiomas
-js/i18n.js      — textos de interfaz en 6 idiomas
-js/app.js       — lógica de la app, ajustes y estadísticas
+src/
+  core/                  # lógica pura, sin React (testeable de forma aislada)
+    kana/                #   motor romaji → kana: tokenizer + matcher incremental
+    words/               #   vocabulario tipado con traducciones a 6 idiomas
+    i18n/                #   diccionarios de interfaz y detección de idioma
+  features/
+    practice/            # sesión de práctica: useTypingGame, WordDisplay,
+                         #   RomajiTrace, PracticeStage
+    settings/            # SettingsContext (persistido), SettingsPanel
+    stats/               # StatsContext (persistido), StatsBar
+  shared/
+    components/          # Toggle, Segmented, Chip
+    hooks/               # useLocalStorage
 ```
+
+Reglas de dependencia: `features` puede importar de `core` y `shared`; `core` no importa de nadie. El estado global (ajustes y estadísticas) vive en contextos de React persistidos en localStorage.
+
+## Despliegue
+
+Cada push a `main` ejecuta el workflow de GitHub Actions: tests → build → publica `dist/` en la rama `gh-pages`, que sirve el sitio en GitHub Pages.
 
 ## Añadir palabras o idiomas
 
-- **Palabras**: añade una entrada en `js/words.js` con `k` (kana), `j` (kanji o `null`), `c` (categoría) y `t` (traducciones).
-- **Idiomas**: añade el código en `js/i18n.js` con todos los textos de interfaz, y la traducción correspondiente en cada palabra de `js/words.js`.
+- **Palabras**: añade una entrada en `src/core/words/data.ts` (`kana`, `kanji`, `category`, `translations`).
+- **Idiomas**: añade el código en `src/core/i18n/types.ts` (`LANGUAGES`), el diccionario en `dictionaries.ts` y la traducción en cada palabra de `data.ts` — TypeScript te marcará todo lo que falte.

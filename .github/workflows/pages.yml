@@ -1,7 +1,7 @@
 name: Deploy to GitHub Pages
 
-# Publica el contenido de main en la rama gh-pages, que es la
-# fuente del sitio de GitHub Pages.
+# Compila la app (Vite) y publica dist/ en la rama gh-pages,
+# que es la fuente del sitio de GitHub Pages.
 on:
   push:
     branches: [main]
@@ -19,5 +19,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Publish main to gh-pages
-        run: git push --force origin HEAD:gh-pages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish dist to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          GIT_INDEX_FILE="$(pwd)/.git/deploy-index" git --work-tree=dist add -A .
+          TREE=$(GIT_INDEX_FILE="$(pwd)/.git/deploy-index" git write-tree)
+          COMMIT=$(git commit-tree "$TREE" -m "Deploy $GITHUB_SHA")
+          git push --force origin "$COMMIT:refs/heads/gh-pages"

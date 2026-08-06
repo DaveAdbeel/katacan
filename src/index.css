@@ -1,0 +1,47 @@
+@import 'tailwindcss';
+
+/* Tema dark de katacan (único tema de la app) */
+@theme {
+  --color-bg: #0b0c0f;
+  --color-raised: #14161b;
+  --color-hover: #1c1f26;
+  --color-line: #262a33;
+  --color-ink: #e7e9ee;
+  --color-dim: #8a8f9c;
+  --color-faint: #4a4f5c;
+  --color-danger: #f87171;
+  --font-sans: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+  --font-jp: 'Noto Sans JP', sans-serif;
+}
+
+:root {
+  /* Color de acento elegido por el usuario (se fija desde React) */
+  --accent: #818cf8;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  overflow: hidden;
+}
+
+/* Sacudida al fallar una tecla */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+}
+
+.animate-shake {
+  animation: shake 0.28s ease;
+}

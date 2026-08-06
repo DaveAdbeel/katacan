@@ -3,9 +3,9 @@ import { useSettings } from '../settings/SettingsContext'
 import type { FontScale } from '../settings/types'
 
 const WORD_SIZE: Record<FontScale, string> = {
-  s: 'text-[2.6rem]',
-  m: 'text-[3.4rem]',
-  l: 'text-[4.4rem]',
+  s: 'text-[2rem] sm:text-[2.6rem]',
+  m: 'text-[2.4rem] sm:text-[3.4rem]',
+  l: 'text-[3rem] sm:text-[4.4rem]',
 }
 
 interface Props {
@@ -25,7 +25,7 @@ export function WordDisplay({ units, unitIndex, completed, revealed, errorPulse 
     <div
       key={errorPulse > 0 ? errorPulse : undefined}
       data-testid="word"
-      className={`${WORD_SIZE[settings.fontScale]} min-h-[1.25em] font-jp leading-[1.25] tracking-[0.06em] ${errorPulse > 0 ? 'animate-shake' : ''}`}
+      className={`${WORD_SIZE[settings.fontScale]} min-h-[1.25em] max-w-full font-jp leading-[1.25] tracking-[0.06em] ${errorPulse > 0 ? 'animate-shake' : ''}`}
     >
       {units.map((u, i) => {
         const isDone = i < unitIndex || completed

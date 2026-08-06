@@ -72,6 +72,18 @@ export function SettingsPanel({ open, onClose }: Props) {
             ))}
           </select>
 
+          <Section title={t.level} />
+          <div className="flex flex-wrap gap-1.5">
+            {(['basic', 'n5', 'n4', 'n3', 'n2', 'n1'] as const).map((lvl) => (
+              <Chip key={lvl} active={settings.level === lvl} onClick={() => update({ level: lvl })}>
+                {lvl === 'basic' ? t.levelBasic : lvl.toUpperCase()}
+              </Chip>
+            ))}
+          </div>
+          {settings.level !== 'basic' && (
+            <p className="mt-2 text-[0.72rem] text-faint">{t.jlptNote}</p>
+          )}
+
           <Section title={t.script} />
           <Segmented
             options={[
@@ -83,6 +95,8 @@ export function SettingsPanel({ open, onClose }: Props) {
             onChange={(script) => update({ script })}
           />
 
+          {settings.level === 'basic' && (
+            <>
           <Section title={t.categories} />
           <div className="flex flex-wrap gap-1.5">
             <Chip
@@ -101,6 +115,8 @@ export function SettingsPanel({ open, onClose }: Props) {
               </Chip>
             ))}
           </div>
+            </>
+          )}
 
           <Section title={t.settings} />
           <Toggle

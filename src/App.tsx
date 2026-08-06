@@ -25,14 +25,14 @@ export default function App() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center justify-between px-6 py-4 max-sm:px-4 max-sm:py-3">
-        <div className="flex items-baseline gap-2.5">
-          <span className="font-jp text-[1.05rem] font-normal text-(--accent)">カタカン</span>
-          <span className="text-[0.95rem] tracking-[0.12em]">katacan</span>
+        <div className="flex shrink-0 items-baseline gap-2.5 max-sm:gap-1.5">
+          <span className="whitespace-nowrap font-jp text-[1.05rem] font-normal text-(--accent) max-sm:text-[0.95rem]">カタカン</span>
+          <span className="text-[0.95rem] tracking-[0.12em] max-sm:hidden">katacan</span>
           <span className="text-[0.75rem] tracking-[0.05em] text-faint max-sm:hidden">
             {t.tagline}
           </span>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <StatsBar />
           <button
             type="button"
@@ -51,7 +51,7 @@ export default function App() {
         onToggleSettings={() => setSettingsOpen((v) => !v)}
       />
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-[0.72rem] tracking-[0.04em] text-faint max-sm:justify-center max-sm:px-4 max-sm:py-3">
+      <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-[0.72rem] tracking-[0.04em] text-faint max-sm:hidden">
         <span className="max-sm:hidden">{t.hint}</span>
         <span className="flex gap-5">
           <span>{t.keySkip}</span>

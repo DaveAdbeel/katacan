@@ -3,6 +3,11 @@ import type { LanguageCode, UiStrings } from './types'
 
 export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
   es: {
+    level: 'Nivel',
+    levelBasic: 'Básico',
+    jlptNote: 'Vocabulario JLPT con significados en inglés',
+    skip: 'Saltar',
+    reveal: 'Revelar',
     _name: 'Español',
     tagline: 'práctica de escritura japonesa',
     hint: 'Escribe en romaji — se convierte a kana automáticamente',
@@ -50,6 +55,11 @@ export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
     categories_adjectives: 'Adjetivos',
   },
   en: {
+    level: 'Level',
+    levelBasic: 'Basic',
+    jlptNote: 'JLPT vocabulary with English meanings',
+    skip: 'Skip',
+    reveal: 'Reveal',
     _name: 'English',
     tagline: 'japanese writing practice',
     hint: 'Type in romaji — it converts to kana automatically',
@@ -97,6 +107,11 @@ export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
     categories_adjectives: 'Adjectives',
   },
   fr: {
+    level: 'Niveau',
+    levelBasic: 'Basique',
+    jlptNote: 'Vocabulaire JLPT avec sens en anglais',
+    skip: 'Passer',
+    reveal: 'Révéler',
     _name: 'Français',
     tagline: 'pratique de l\'écriture japonaise',
     hint: 'Écris en romaji — converti en kana automatiquement',
@@ -144,6 +159,11 @@ export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
     categories_adjectives: 'Adjectifs',
   },
   de: {
+    level: 'Stufe',
+    levelBasic: 'Basis',
+    jlptNote: 'JLPT-Vokabular mit englischen Bedeutungen',
+    skip: 'Überspringen',
+    reveal: 'Aufdecken',
     _name: 'Deutsch',
     tagline: 'japanische Schreibübung',
     hint: 'Tippe in Romaji — wird automatisch in Kana umgewandelt',
@@ -191,6 +211,11 @@ export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
     categories_adjectives: 'Adjektive',
   },
   pt: {
+    level: 'Nível',
+    levelBasic: 'Básico',
+    jlptNote: 'Vocabulário JLPT com significados em inglês',
+    skip: 'Pular',
+    reveal: 'Revelar',
     _name: 'Português',
     tagline: 'prática de escrita japonesa',
     hint: 'Digite em romaji — converte para kana automaticamente',
@@ -238,6 +263,11 @@ export const DICTIONARIES: Record<LanguageCode, UiStrings> = {
     categories_adjectives: 'Adjetivos',
   },
   it: {
+    level: 'Livello',
+    levelBasic: 'Base',
+    jlptNote: 'Vocabolario JLPT con significati in inglese',
+    skip: 'Salta',
+    reveal: 'Rivela',
     _name: 'Italiano',
     tagline: 'pratica di scrittura giapponese',
     hint: 'Scrivi in romaji — si converte in kana automaticamente',

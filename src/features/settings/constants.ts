@@ -17,6 +17,7 @@ export const AUTO_ADVANCE_MS: Record<AutoAdvance, number> = {
 export function defaultSettings(): Settings {
   return {
     lang: detectLanguage(),
+    level: 'basic',
     script: 'both',
     categories: [...CATEGORIES],
     showKanji: true,

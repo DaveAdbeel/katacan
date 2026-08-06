@@ -4,6 +4,11 @@ export type LanguageCode = (typeof LANGUAGES)[number]
 
 export interface UiStrings {
   _name: string
+  level: string
+  levelBasic: string
+  jlptNote: string
+  skip: string
+  reveal: string
   tagline: string
   hint: string
   keySkip: string

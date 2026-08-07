@@ -95,6 +95,7 @@ export function WordDetailPanel({ word, pool, onClose, background }: Props) {
             <h3 className="text-[0.68rem] font-medium uppercase tracking-[0.2em] text-faint">
               {t.kanjiLabel}
             </h3>
+            <p className="-mt-2 text-[0.72rem] leading-snug text-faint">{t.kanjiNotationHint}</p>
             {kanjiChars.map((ch) => {
               const info = kanjiDict?.[ch]
               const meanings = info?.m[lang] ?? info?.m.en ?? []
@@ -105,16 +106,42 @@ export function WordDetailPanel({ word, pool, onClose, background }: Props) {
                     <span className="text-sm text-dim">{meanings.join(', ')}</span>
                   </div>
                   {info && (info.on.length > 0 || info.kun.length > 0) && (
-                    <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[0.78rem] text-faint">
+                    <div className="mt-3 space-y-2.5">
                       {info.on.length > 0 && (
-                        <span>
-                          {t.onyomiLabel} <span className="font-jp text-dim">{info.on.join('、')}</span>
-                        </span>
+                        <div>
+                          <div className="text-[0.68rem] text-faint">
+                            {t.onyomiLabel}{' '}
+                            <span className="text-faint/70">· {t.onyomiHint}</span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {info.on.map((r) => (
+                              <span
+                                key={r}
+                                className="rounded-md border border-line px-1.5 py-0.5 font-jp text-[0.8rem] text-dim"
+                              >
+                                {r}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       {info.kun.length > 0 && (
-                        <span>
-                          {t.kunyomiLabel} <span className="font-jp text-dim">{info.kun.join('、')}</span>
-                        </span>
+                        <div>
+                          <div className="text-[0.68rem] text-faint">
+                            {t.kunyomiLabel}{' '}
+                            <span className="text-faint/70">· {t.kunyomiHint}</span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {info.kun.map((r) => (
+                              <span
+                                key={r}
+                                className="rounded-md border border-line px-1.5 py-0.5 font-jp text-[0.8rem] text-dim"
+                              >
+                                {r}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

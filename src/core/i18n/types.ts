@@ -9,7 +9,10 @@ export interface UiStrings {
   masteredLabel: string
   kanjiLabel: string
   onyomiLabel: string
+  onyomiHint: string
   kunyomiLabel: string
+  kunyomiHint: string
+  kanjiNotationHint: string
   usedInLabel: string
   level: string
   levelBasic: string

@@ -14,7 +14,7 @@ Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kan
 - **6 idiomas** de interfaz y de traducciones: español, English, français, Deutsch, português, italiano.
 - **Vocabulario JLPT completo N5–N1**: 8.087 palabras (N5 717 · N4 666 · N3 2.126 · N2 1.890 · N1 2.688) del dataset abierto [open-anki-jlpt-decks](https://github.com/jamsinclair/open-anki-jlpt-decks) (MIT), con significados en inglés y en **español al 98%** (7.963/8.087, vía [jmdict-simplified](https://github.com/scriptin/jmdict-simplified) / JMdict-EDRDG). El resto recae automáticamente en inglés. Cada nivel se carga bajo demanda.
 - **Set básico curado**: 157 palabras en 11 categorías con traducciones a los 6 idiomas.
-- **Colección**: una ficha por cada palabra del nivel/categorías activos. Las que ya escribiste bien alguna vez brillan con el color de acento; las demás quedan sin contraste. Al tocar una ficha dominada se abre su detalle: significado, cada kanji con sus lecturas on'yomi/kun'yomi y significado (vía KANJIDIC2), y otras palabras del mismo pool que comparten ese kanji.
+- **Colección**: una ficha por cada palabra del nivel/categorías activos, con su significado. Las que ya escribiste bien alguna vez brillan con el color de acento; las demás quedan sin contraste. Cada palabra tiene su **propia URL** (`#/word/...`): al tocar una ficha dominada se abre su detalle —significado, cada kanji con sus lecturas on'yomi/kun'yomi y significado (vía KANJIDIC2)— y las palabras que comparten ese kanji aparecen como **enlaces reales** a su propia página, para ir saltando de palabra en palabra. Un enlace directo funciona igual (se abre con la práctica de fondo).
 - **Versión móvil**: toca la pantalla para invocar el teclado y escribe igual que en escritorio (incluido backspace); botones táctiles para saltar/revelar.
 - **Ultra personalizable**: nivel (Básico/N5–N1), silabario, categorías, modo memoria (kana oculto), kanji on/off, avance automático, tamaño de texto, color de acento, rastro de romaji on/off.
 - **Estadísticas y progreso persistentes**: palabras completadas, precisión, racha y palabras dominadas (localStorage).
@@ -32,7 +32,7 @@ Lees el **significado de la palabra en tu idioma**, y escribes la palabra en kan
 
 ## Stack
 
-React 19 · TypeScript · Tailwind CSS 4 · Vite 8 · Vitest
+React 19 · TypeScript · Tailwind CSS 4 · Vite 8 · Vitest · React Router 8
 
 ```bash
 npm install
@@ -57,7 +57,8 @@ src/
   features/
     practice/            # useWordPool (fuente compartida), useTypingGame,
                          #   WordDisplay, RomajiTrace, PracticeStage
-    collection/          # CollectionView (grid), WordCard, WordDetailPanel
+    collection/          # CollectionView (grid), WordCard, WordDetailPanel,
+                         #   WordDetailRoute (resuelve /word/:id)
     settings/            # SettingsContext (persistido), SettingsPanel
     stats/                # StatsContext (persistido), StatsBar
     mastery/              # MasteryContext (persistido): qué palabras ya escribiste bien
@@ -71,6 +72,10 @@ Reglas de dependencia: `features` puede importar de `core` y `shared`; `core` no
 ### Motor de escritura (`core/kana/typing.ts`)
 
 `evaluateTyping(units, typed)` es una función pura: dado el romaji tecleado hasta ahora (tal cual, con errores incluidos), recalcula desde cero cuántas unidades kana están correctamente completadas y si la cola en curso todavía puede llegar a encajar. No hay estado mutable ni teclas rechazadas — la interfaz solo colorea en rojo la parte que ya no encaja, y borrar (`Backspace`) es simplemente recalcular con un carácter menos.
+
+### Rutas por palabra (`react-router`, modo *hash*)
+
+Cada palabra tiene un id estable (`fuente:kana:kanji`, p. ej. `n5:たべる:食べる`) y su propia ruta `#/word/:id`, resuelta por `findWordById` en `core/words/poolWord.ts` — busca en el set básico o carga el nivel JLPT que corresponda, sin depender de qué esté seleccionado en los ajustes. La ruta de detalle se superpone sobre la que estuviera activa (práctica o colección) con el patrón estándar de "ruta de fondo" (`location.state.backgroundLocation`); un enlace directo o una recarga cae en práctica. Las palabras relacionadas dentro del panel son `<Link>` reales a su propia ruta, así que se puede ir saltando de un kanji a otro. Se usa `HashRouter` (URLs con `#/...`) para no necesitar configurar redirecciones en el servidor de GitHub Pages.
 
 ## Despliegue
 

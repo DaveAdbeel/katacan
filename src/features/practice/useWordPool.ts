@@ -1,21 +1,15 @@
 import { useEffect, useState } from 'react'
-import type { LanguageCode } from '../../core/i18n'
 import { isKatakanaChar } from '../../core/kana'
-import { WORDS, type Category, type Script } from '../../core/words'
-import { loadJlptWords, type JlptLevel } from '../../core/words/jlpt'
+import {
+  WORDS,
+  loadPoolForSource,
+  toPoolWordFromBasic,
+  type PoolWord,
+  type Script,
+} from '../../core/words'
 import { useSettings } from '../settings/SettingsContext'
 
-/** Palabra normalizada para la sesión, venga del set básico o del JLPT. */
-export interface PoolWord {
-  /** Identificador estable (persiste entre sesiones, para el progreso guardado) */
-  id: string
-  kana: string
-  kanji: string | null
-  /** Categoría (set básico) o nivel JLPT, para la etiqueta superior */
-  category?: Category
-  level?: JlptLevel
-  meanings: Partial<Record<LanguageCode, string>> & { en: string }
-}
+export type { PoolWord } from '../../core/words'
 
 function kanaScript(kana: string): Script {
   return isKatakanaChar([...kana][0]) ? 'katakana' : 'hiragana'
@@ -47,27 +41,9 @@ export function useWordPool(): { words: PoolWord[]; loading: boolean } {
     }
 
     if (level === 'basic') {
-      finish(
-        WORDS.filter((w) => categories.includes(w.category)).map((w) => ({
-          id: `basic:${w.kana}:${w.kanji ?? ''}`,
-          kana: w.kana,
-          kanji: w.kanji,
-          category: w.category,
-          meanings: w.translations,
-        })),
-      )
+      finish(WORDS.filter((w) => categories.includes(w.category)).map(toPoolWordFromBasic))
     } else {
-      loadJlptWords(level).then((entries) =>
-        finish(
-          entries.map((e) => ({
-            id: `${level}:${e.k}:${e.j ?? ''}`,
-            kana: e.k,
-            kanji: e.j,
-            level,
-            meanings: e.s ? { en: e.m, es: e.s } : { en: e.m },
-          })),
-        ),
-      )
+      loadPoolForSource(level).then(finish)
     }
 
     return () => {

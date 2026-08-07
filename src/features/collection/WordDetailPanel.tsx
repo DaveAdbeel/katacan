@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link, type Location } from 'react-router'
 import { loadKanjiDict, type KanjiInfo } from '../../core/kanji'
 import { useSettings } from '../settings/SettingsContext'
 import type { PoolWord } from '../practice/useWordPool'
 
 interface Props {
   word: PoolWord
-  /** Pool actualmente cargado (mismo nivel/categorías), para las referencias cruzadas */
+  /** Todas las palabras de la misma fuente que `word`, para las referencias cruzadas */
   pool: PoolWord[]
   onClose: () => void
+  /** Ruta de fondo a preservar al navegar a una palabra relacionada */
+  background: Partial<Location>
 }
 
 const KANJI_LANGS = ['en', 'es', 'fr', 'pt'] as const
@@ -22,7 +25,7 @@ function isKanjiChar(ch: string): boolean {
  * sus lecturas y significados, y otras palabras del pool actual que
  * comparten alguno de esos kanji.
  */
-export function WordDetailPanel({ word, pool, onClose }: Props) {
+export function WordDetailPanel({ word, pool, onClose, background }: Props) {
   const { settings, t } = useSettings()
   const [kanjiDict, setKanjiDict] = useState<Record<string, KanjiInfo> | null>(null)
 
@@ -122,13 +125,16 @@ export function WordDetailPanel({ word, pool, onClose }: Props) {
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {relatedByKanji.get(ch)!.map((w) => (
-                          <span
+                          <Link
                             key={w.id}
-                            className="rounded-full border border-line px-2.5 py-1 font-jp text-[0.8rem] text-dim"
+                            to={`/word/${encodeURIComponent(w.id)}`}
+                            state={{ backgroundLocation: background }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="cursor-pointer rounded-full border border-line px-2.5 py-1 font-jp text-[0.8rem] text-dim transition-colors hover:border-(--accent) hover:text-(--accent)"
                             title={w.meanings[settings.lang] ?? w.meanings.en}
                           >
                             {w.kanji ?? w.kana}
-                          </span>
+                          </Link>
                         ))}
                       </div>
                     </div>

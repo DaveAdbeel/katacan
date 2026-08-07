@@ -1,23 +1,26 @@
-import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router'
 import { useMastery } from '../mastery/MasteryContext'
 import { useWordPool } from '../practice/useWordPool'
 import { useSettings } from '../settings/SettingsContext'
-import type { PoolWord } from '../practice/useWordPool'
 import { WordCard } from './WordCard'
-import { WordDetailPanel } from './WordDetailPanel'
 
 /**
  * Vista de colección: una ficha por palabra del pool actual (nivel +
  * categorías + silabario activos), brillando en cuanto se escribió
- * bien alguna vez. Tocar una ficha ya dominada abre su detalle.
+ * bien alguna vez. Tocar una ficha ya dominada abre su propia página
+ * de detalle (/word/:id), superpuesta sobre esta vista.
  */
 export function CollectionView() {
   const { t } = useSettings()
   const { words, loading } = useWordPool()
   const { isMastered } = useMastery()
-  const [selected, setSelected] = useState<PoolWord | null>(null)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const masteredInPool = words.filter((w) => isMastered(w.id)).length
+
+  const openWord = (id: string) =>
+    navigate(`/word/${encodeURIComponent(id)}`, { state: { backgroundLocation: location } })
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -41,14 +44,10 @@ export function CollectionView() {
               key={w.id}
               word={w}
               mastered={isMastered(w.id)}
-              onClick={() => setSelected(w)}
+              onClick={() => openWord(w.id)}
             />
           ))}
         </div>
-      )}
-
-      {selected && (
-        <WordDetailPanel word={selected} pool={words} onClose={() => setSelected(null)} />
       )}
     </main>
   )

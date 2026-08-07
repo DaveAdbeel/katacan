@@ -1,12 +1,12 @@
 import { useState } from 'react'
+import { Link, Route, Routes, useLocation, type Location } from 'react-router'
 import { CollectionView } from './features/collection/CollectionView'
+import { WordDetailRoute } from './features/collection/WordDetailRoute'
 import { PracticeStage } from './features/practice/PracticeStage'
 import { useTypingGame } from './features/practice/useTypingGame'
 import { SettingsPanel } from './features/settings/SettingsPanel'
 import { useSettings } from './features/settings/SettingsContext'
 import { StatsBar } from './features/stats/StatsBar'
-
-type View = 'practice' | 'collection'
 
 function GearIcon() {
   return (
@@ -49,8 +49,17 @@ function GridIcon() {
 export default function App() {
   const { settings, t } = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [view, setView] = useState<View>('practice')
   const game = useTypingGame()
+  const location = useLocation()
+
+  // Patrón de "ruta de fondo": /word/:id se superpone sobre la ruta
+  // que estuviera activa (práctica o colección). Un enlace directo o
+  // recargar la página no trae ese estado, así que recae en práctica.
+  const state = location.state as { backgroundLocation?: Location } | null
+  const isWordRoute = location.pathname.startsWith('/word/')
+  const backgroundLocation = state?.backgroundLocation
+  const background = backgroundLocation ?? (isWordRoute ? { ...location, pathname: '/' } : location)
+  const onCollection = background.pathname === '/collection'
 
   return (
     <div className="flex h-full flex-col">
@@ -63,30 +72,28 @@ export default function App() {
           </span>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
-          {view === 'practice' && <StatsBar />}
+          {!onCollection && <StatsBar />}
           <div className="flex items-center gap-1 rounded-lg border border-line p-0.5">
-            <button
-              type="button"
+            <Link
+              to="/"
               aria-label={t.tabPractice}
-              aria-pressed={view === 'practice'}
-              onClick={() => setView('practice')}
+              aria-pressed={!onCollection}
               className={`flex cursor-pointer items-center rounded-md p-1.5 transition-colors ${
-                view === 'practice' ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
+                !onCollection ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
               }`}
             >
               <PencilIcon />
-            </button>
-            <button
-              type="button"
+            </Link>
+            <Link
+              to="/collection"
               aria-label={t.tabCollection}
-              aria-pressed={view === 'collection'}
-              onClick={() => setView('collection')}
+              aria-pressed={onCollection}
               className={`flex cursor-pointer items-center rounded-md p-1.5 transition-colors ${
-                view === 'collection' ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
+                onCollection ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
               }`}
             >
               <GridIcon />
-            </button>
+            </Link>
           </div>
           <button
             type="button"
@@ -99,17 +106,21 @@ export default function App() {
         </div>
       </header>
 
-      {view === 'practice' ? (
-        <PracticeStage
-          game={game}
-          settingsOpen={settingsOpen}
-          onToggleSettings={() => setSettingsOpen((v) => !v)}
+      <Routes location={background}>
+        <Route
+          path="/"
+          element={
+            <PracticeStage
+              game={game}
+              settingsOpen={settingsOpen}
+              onToggleSettings={() => setSettingsOpen((v) => !v)}
+            />
+          }
         />
-      ) : (
-        <CollectionView />
-      )}
+        <Route path="/collection" element={<CollectionView />} />
+      </Routes>
 
-      {view === 'practice' && (
+      {!onCollection && (
         <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-[0.72rem] tracking-[0.04em] text-faint max-sm:hidden">
           <span className="max-sm:hidden">{t.hint}</span>
           <span className="flex gap-5">
@@ -119,6 +130,10 @@ export default function App() {
           </span>
         </footer>
       )}
+
+      <Routes>
+        <Route path="/word/:id" element={<WordDetailRoute background={background} />} />
+      </Routes>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

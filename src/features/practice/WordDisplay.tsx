@@ -13,11 +13,20 @@ interface Props {
   unitIndex: number
   completed: boolean
   revealed: boolean
+  /** La cola tecleada de la unidad en curso ya no encaja con ninguna grafía */
+  bufferInvalid: boolean
   errorPulse: number
 }
 
 /** Palabra kana con progreso coloreado; en modo memoria se enmascara. */
-export function WordDisplay({ units, unitIndex, completed, revealed, errorPulse }: Props) {
+export function WordDisplay({
+  units,
+  unitIndex,
+  completed,
+  revealed,
+  bufferInvalid,
+  errorPulse,
+}: Props) {
   const { settings } = useSettings()
   const hidden = settings.recallMode && !revealed && !completed
 
@@ -35,7 +44,10 @@ export function WordDisplay({ units, unitIndex, completed, revealed, errorPulse 
         let color = 'text-faint'
         if (isDone) color = 'text-(--accent)'
         else if (revealed) color = 'text-dim'
-        else if (isCurrent) color = masked ? 'text-dim' : 'text-ink'
+        else if (isCurrent) {
+          if (bufferInvalid) color = 'text-danger'
+          else color = masked ? 'text-dim' : 'text-ink'
+        }
 
         return (
           <span key={i} className={`${color} transition-colors duration-100`}>

@@ -9,6 +9,3 @@ export interface KanaUnit {
   /** Grafías romaji aceptadas para esta unidad */
   romaji: string[]
 }
-
-/** Resultado de alimentar una letra al matcher. */
-export type InputResult = 'progress' | 'unit' | 'complete' | 'error'

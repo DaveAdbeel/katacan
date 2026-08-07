@@ -4,6 +4,13 @@ export type LanguageCode = (typeof LANGUAGES)[number]
 
 export interface UiStrings {
   _name: string
+  tabPractice: string
+  tabCollection: string
+  masteredLabel: string
+  kanjiLabel: string
+  onyomiLabel: string
+  kunyomiLabel: string
+  usedInLabel: string
   level: string
   levelBasic: string
   jlptNote: string

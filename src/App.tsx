@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { CollectionView } from './features/collection/CollectionView'
 import { PracticeStage } from './features/practice/PracticeStage'
 import { useTypingGame } from './features/practice/useTypingGame'
 import { SettingsPanel } from './features/settings/SettingsPanel'
 import { useSettings } from './features/settings/SettingsContext'
 import { StatsBar } from './features/stats/StatsBar'
+
+type View = 'practice' | 'collection'
 
 function GearIcon() {
   return (
@@ -17,9 +20,36 @@ function GearIcon() {
   )
 }
 
+function PencilIcon() {
+  return (
+    <svg
+      width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  )
+}
+
+function GridIcon() {
+  return (
+    <svg
+      width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  )
+}
+
 export default function App() {
   const { settings, t } = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [view, setView] = useState<View>('practice')
   const game = useTypingGame()
 
   return (
@@ -33,7 +63,31 @@ export default function App() {
           </span>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
-          <StatsBar />
+          {view === 'practice' && <StatsBar />}
+          <div className="flex items-center gap-1 rounded-lg border border-line p-0.5">
+            <button
+              type="button"
+              aria-label={t.tabPractice}
+              aria-pressed={view === 'practice'}
+              onClick={() => setView('practice')}
+              className={`flex cursor-pointer items-center rounded-md p-1.5 transition-colors ${
+                view === 'practice' ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
+              }`}
+            >
+              <PencilIcon />
+            </button>
+            <button
+              type="button"
+              aria-label={t.tabCollection}
+              aria-pressed={view === 'collection'}
+              onClick={() => setView('collection')}
+              className={`flex cursor-pointer items-center rounded-md p-1.5 transition-colors ${
+                view === 'collection' ? 'bg-hover text-(--accent)' : 'text-dim hover:text-ink'
+              }`}
+            >
+              <GridIcon />
+            </button>
+          </div>
           <button
             type="button"
             aria-label={t.settings}
@@ -45,20 +99,26 @@ export default function App() {
         </div>
       </header>
 
-      <PracticeStage
-        game={game}
-        settingsOpen={settingsOpen}
-        onToggleSettings={() => setSettingsOpen((v) => !v)}
-      />
+      {view === 'practice' ? (
+        <PracticeStage
+          game={game}
+          settingsOpen={settingsOpen}
+          onToggleSettings={() => setSettingsOpen((v) => !v)}
+        />
+      ) : (
+        <CollectionView />
+      )}
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-[0.72rem] tracking-[0.04em] text-faint max-sm:hidden">
-        <span className="max-sm:hidden">{t.hint}</span>
-        <span className="flex gap-5">
-          <span>{t.keySkip}</span>
-          {settings.recallMode && <span>{t.keyReveal}</span>}
-          <span>{t.keySettings}</span>
-        </span>
-      </footer>
+      {view === 'practice' && (
+        <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 text-[0.72rem] tracking-[0.04em] text-faint max-sm:hidden">
+          <span className="max-sm:hidden">{t.hint}</span>
+          <span className="flex gap-5">
+            <span>{t.keySkip}</span>
+            {settings.recallMode && <span>{t.keyReveal}</span>}
+            <span>{t.keySettings}</span>
+          </span>
+        </footer>
+      )}
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

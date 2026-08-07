@@ -1,4 +1,5 @@
 export { tokenize } from './tokenizer'
-export { Matcher } from './matcher'
+export { evaluateTyping } from './typing'
 export { isKatakanaChar, toHiragana } from './romaji'
-export type { KanaUnit, UnitType, InputResult } from './types'
+export type { KanaUnit, UnitType } from './types'
+export type { TypingState } from './typing'

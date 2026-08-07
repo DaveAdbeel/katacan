@@ -27,7 +27,7 @@ interface Props {
 /** Escena central: categoría/nivel, significado, kana, kanji y romaji tecleado. */
 export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
   const { settings, t } = useSettings()
-  const { view, handleChar, skip, reveal, continueNext } = game
+  const { view, handleChar, backspace, skip, reveal, continueNext } = game
   const inputRef = useRef<HTMLInputElement>(null)
 
   /** Punto único de entrada de letras (teclado físico y virtual). */
@@ -37,6 +37,14 @@ export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
       return
     }
     handleChar(ch)
+  }
+
+  const routeBackspace = () => {
+    if (view.awaitingNext) {
+      continueNext()
+      return
+    }
+    backspace()
   }
 
   // Listener global para teclado físico; el handler vive en un ref para
@@ -67,7 +75,12 @@ export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
       if (settings.recallMode) reveal()
       return
     }
-    // Las letras que llegan al input oculto se procesan en su onInput
+    if (e.key === 'Backspace') {
+      e.preventDefault()
+      backspace()
+      return
+    }
+    // Las letras que llegan al input oculto se procesan en su onChange
     // (así el teclado virtual y el físico no se duplican)
     if (e.target === inputRef.current) return
     const ch = e.key.toLowerCase()
@@ -98,20 +111,26 @@ export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
       className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-4 text-center sm:gap-4 sm:px-6"
       onClick={() => inputRef.current?.focus({ preventScroll: true })}
     >
-      {/* Input oculto: invoca el teclado virtual en móvil */}
+      {/* Input oculto: invoca el teclado virtual en móvil. Su valor
+          refleja siempre lo tecleado, así que backspace nativo funciona. */}
       <input
         ref={inputRef}
         type="text"
+        value={view.typed}
         aria-hidden="true"
         autoCapitalize="none"
         autoCorrect="off"
         autoComplete="off"
         spellCheck={false}
         className="pointer-events-none absolute size-px opacity-0"
-        onInput={(e) => {
-          const value = e.currentTarget.value
-          e.currentTarget.value = ''
-          for (const ch of value.toLowerCase()) {
+        onChange={(e) => {
+          const native = e.nativeEvent as InputEvent
+          if (native.inputType?.startsWith('delete')) {
+            routeBackspace()
+            return
+          }
+          const added = e.currentTarget.value.slice(view.typed.length).toLowerCase()
+          for (const ch of added) {
             if (/^[a-z-]$/.test(ch)) routeChar(ch)
           }
         }}
@@ -130,6 +149,7 @@ export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
             unitIndex={view.unitIndex}
             completed={view.completed}
             revealed={view.revealed}
+            bufferInvalid={!view.bufferValid}
             errorPulse={view.errorPulse}
           />
           <div
@@ -139,7 +159,12 @@ export function PracticeStage({ game, settingsOpen, onToggleSettings }: Props) {
           >
             {view.word.kanji ?? ''}
           </div>
-          <RomajiTrace trace={view.romajiTrace} awaitingNext={view.awaitingNext} />
+          <RomajiTrace
+            typed={view.typed}
+            bufferLength={view.buffer.length}
+            bufferValid={view.bufferValid}
+            awaitingNext={view.awaitingNext}
+          />
 
           {/* Acciones táctiles (solo pantallas pequeñas) */}
           <div className="flex gap-3 sm:hidden">

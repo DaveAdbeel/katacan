@@ -1,30 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import type { LanguageCode } from '../../core/i18n'
-import { Matcher, isKatakanaChar, type KanaUnit } from '../../core/kana'
-import { WORDS, type Category, type Script } from '../../core/words'
-import { loadJlptWords, type JlptLevel } from '../../core/words/jlpt'
+import { evaluateTyping, tokenize, type KanaUnit } from '../../core/kana'
+import { useMastery } from '../mastery/MasteryContext'
 import { AUTO_ADVANCE_MS } from '../settings/constants'
 import { useSettings } from '../settings/SettingsContext'
 import { useStats } from '../stats/StatsContext'
-
-/** Palabra normalizada para la sesión, venga del set básico o del JLPT. */
-export interface PoolWord {
-  kana: string
-  kanji: string | null
-  /** Categoría (set básico) o nivel JLPT, para la etiqueta superior */
-  category?: Category
-  level?: JlptLevel
-  meanings: Partial<Record<LanguageCode, string>> & { en: string }
-}
+import { useWordPool, type PoolWord } from './useWordPool'
 
 interface GameView {
   word: PoolWord | null
   units: KanaUnit[]
   unitIndex: number
-  /** Buffer romaji de la unidad en curso */
+  /** Todo el romaji tecleado para esta palabra, tal cual (incluye errores) */
+  typed: string
+  /** Cola de la unidad en curso (puede ser inválida) */
   buffer: string
-  /** Romaji acumulado de toda la palabra; persiste hasta la siguiente */
-  romajiTrace: string
+  /** Si `buffer` es una grafía válida (en curso) o ya no encaja con nada */
+  bufferValid: boolean
   completed: boolean
   revealed: boolean
   awaitingNext: boolean
@@ -37,8 +28,9 @@ const emptyView: GameView = {
   word: null,
   units: [],
   unitIndex: 0,
+  typed: '',
   buffer: '',
-  romajiTrace: '',
+  bufferValid: true,
   completed: false,
   revealed: false,
   awaitingNext: false,
@@ -55,28 +47,23 @@ function shuffle<T>(arr: T[]): T[] {
   return out
 }
 
-function kanaScript(kana: string): Script {
-  return isKatakanaChar([...kana][0]) ? 'katakana' : 'hiragana'
-}
-
 /**
- * Estado y acciones de la sesión de práctica: selección de palabras
- * (set básico o niveles JLPT cargados de forma perezosa), validación
- * del romaji tecleado y estadísticas.
+ * Estado y acciones de la sesión de práctica: recorre el pool de
+ * palabras al azar y valida el romaji tecleado contra la palabra
+ * actual. La escritura nunca se bloquea: cualquier tecla se acepta y
+ * se muestra, marcada como error si no encaja; se corrige con
+ * backspace, igual que en un campo de texto normal.
  */
 export function useTypingGame() {
   const { settings } = useSettings()
   const stats = useStats()
+  const mastery = useMastery()
+  const { words, loading: poolLoading } = useWordPool()
 
-  const matcherRef = useRef<Matcher | null>(null)
-  /** Lista filtrada completa de la que se rellena la cola barajada */
-  const sourceRef = useRef<PoolWord[]>([])
   const queueRef = useRef<{ items: PoolWord[]; index: number }>({ items: [], index: 0 })
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const hadErrorRef = useRef(false)
   const [view, setView] = useState<GameView>(emptyView)
-
-  const { script, categories, level } = settings
 
   const nextWord = () => {
     clearTimeout(timerRef.current)
@@ -84,90 +71,78 @@ export function useTypingGame() {
 
     const queue = queueRef.current
     if (queue.items.length === 0 || queue.index >= queue.items.length) {
-      queue.items = shuffle(sourceRef.current)
+      queue.items = shuffle(words)
       queue.index = 0
     }
     const word = queue.items[queue.index] ?? null
     queue.index++
 
-    matcherRef.current = word ? new Matcher(word.kana) : null
     setView((v) => ({
       ...emptyView,
       loading: false,
       errorPulse: v.errorPulse,
       word,
-      units: matcherRef.current?.units ?? [],
+      units: word ? tokenize(word.kana) : [],
     }))
   }
   const nextWordRef = useRef(nextWord)
   nextWordRef.current = nextWord
 
-  // Carga la fuente de palabras al montar y cuando cambian los filtros
+  // Nueva palabra cuando el pool cambia (nivel, categorías o silabario)
   useEffect(() => {
-    let cancelled = false
-    setView((v) => ({ ...emptyView, errorPulse: v.errorPulse, loading: true }))
-
-    const start = (words: PoolWord[]) => {
-      if (cancelled) return
-      sourceRef.current = words.filter((w) => script === 'both' || kanaScript(w.kana) === script)
-      queueRef.current = { items: [], index: 0 }
+    queueRef.current = { items: [], index: 0 }
+    if (poolLoading) {
+      setView((v) => ({ ...emptyView, errorPulse: v.errorPulse, loading: true }))
+    } else {
       nextWordRef.current()
     }
+    return () => clearTimeout(timerRef.current)
+  }, [words, poolLoading])
 
-    if (level === 'basic') {
-      start(
-        WORDS.filter((w) => categories.includes(w.category)).map((w) => ({
-          kana: w.kana,
-          kanji: w.kanji,
-          category: w.category,
-          meanings: w.translations,
-        })),
-      )
+  /** Aplica una nueva cadena de romaji tecleado y sincroniza el estado. */
+  const apply = (newTyped: string, isDeletion: boolean) => {
+    if (!view.word || view.completed) return
+    const result = evaluateTyping(view.units, newTyped)
+
+    if (!isDeletion) {
+      stats.recordKey(result.valid)
+      if (!result.valid) hadErrorRef.current = true
+    }
+
+    if (result.done) {
+      stats.recordWord(!hadErrorRef.current)
+      if (!hadErrorRef.current) mastery.markMastered(view.word.id)
+      const delay = AUTO_ADVANCE_MS[settings.autoAdvance]
+      setView((v) => ({
+        ...v,
+        typed: newTyped,
+        unitIndex: result.unitIndex,
+        buffer: '',
+        bufferValid: true,
+        completed: true,
+        awaitingNext: delay === 0,
+        errorPulse: !isDeletion && !result.valid ? v.errorPulse + 1 : v.errorPulse,
+      }))
+      if (delay > 0) timerRef.current = setTimeout(() => nextWordRef.current(), delay)
     } else {
-      loadJlptWords(level).then((entries) =>
-        start(
-          entries.map((e) => ({
-            kana: e.k,
-            kanji: e.j,
-            level,
-            meanings: e.s ? { en: e.m, es: e.s } : { en: e.m },
-          })),
-        ),
-      )
+      setView((v) => ({
+        ...v,
+        typed: newTyped,
+        unitIndex: result.unitIndex,
+        buffer: result.buffer,
+        bufferValid: result.valid,
+        errorPulse: !isDeletion && !result.valid ? v.errorPulse + 1 : v.errorPulse,
+      }))
     }
+  }
 
-    return () => {
-      cancelled = true
-      clearTimeout(timerRef.current)
-    }
-  }, [script, categories, level])
+  /** Procesa una letra romaji ([a-z] o "-"). Nunca se rechaza. */
+  const handleChar = (ch: string) => apply(view.typed + ch, false)
 
-  /** Procesa una letra romaji ([a-z] o "-"). */
-  const handleChar = (ch: string) => {
-    const m = matcherRef.current
-    if (!m || m.done) return
-
-    const res = m.input(ch)
-    stats.recordKey(res !== 'error')
-
-    if (res === 'error') {
-      hadErrorRef.current = true
-      setView((v) => ({ ...v, errorPulse: v.errorPulse + 1 }))
-      return
-    }
-
-    const completed = res === 'complete'
-    if (completed) stats.recordWord(!hadErrorRef.current)
-    const delay = AUTO_ADVANCE_MS[settings.autoAdvance]
-    setView((v) => ({
-      ...v,
-      unitIndex: m.index,
-      buffer: m.buffer,
-      romajiTrace: v.romajiTrace + ch,
-      completed,
-      awaitingNext: completed && delay === 0,
-    }))
-    if (completed && delay > 0) timerRef.current = setTimeout(() => nextWordRef.current(), delay)
+  /** Borra la última letra tecleada, para corregir un error. */
+  const backspace = () => {
+    if (!view.typed) return
+    apply(view.typed.slice(0, -1), true)
   }
 
   /** Salta la palabra actual (rompe la racha). */
@@ -188,7 +163,7 @@ export function useTypingGame() {
     if (view.awaitingNext) nextWord()
   }
 
-  return { view, handleChar, skip, reveal, continueNext }
+  return { view, handleChar, backspace, skip, reveal, continueNext }
 }
 
 export type TypingGame = ReturnType<typeof useTypingGame>

@@ -73,9 +73,11 @@ Reglas de dependencia: `features` puede importar de `core` y `shared`; `core` no
 
 `evaluateTyping(units, typed)` es una función pura: dado el romaji tecleado hasta ahora (tal cual, con errores incluidos), recalcula desde cero cuántas unidades kana están correctamente completadas y si la cola en curso todavía puede llegar a encajar. No hay estado mutable ni teclas rechazadas — la interfaz solo colorea en rojo la parte que ya no encaja, y borrar (`Backspace`) es simplemente recalcular con un carácter menos.
 
-### Rutas por palabra (`react-router`, modo *hash*)
+### Rutas por palabra (`react-router`, URLs limpias)
 
-Cada palabra tiene un id estable (`fuente:kana:kanji`, p. ej. `n5:たべる:食べる`) y su propia ruta `#/word/:id`, resuelta por `findWordById` en `core/words/poolWord.ts` — busca en el set básico o carga el nivel JLPT que corresponda, sin depender de qué esté seleccionado en los ajustes. La ruta de detalle se superpone sobre la que estuviera activa (práctica o colección) con el patrón estándar de "ruta de fondo" (`location.state.backgroundLocation`); un enlace directo o una recarga cae en práctica. Las palabras relacionadas dentro del panel son `<Link>` reales a su propia ruta, así que se puede ir saltando de un kanji a otro. Se usa `HashRouter` (URLs con `#/...`) para no necesitar configurar redirecciones en el servidor de GitHub Pages.
+Cada palabra tiene un id estable (`fuente:kana:kanji`, p. ej. `n5:たべる:食べる`) y su propia ruta `/word/:id` (sin `#`, p. ej. `daveadbeel.github.io/katacan/word/n5:たべる:食べる`), resuelta por `findWordById` en `core/words/poolWord.ts` — busca en el set básico o carga el nivel JLPT que corresponda, sin depender de qué esté seleccionado en los ajustes. La ruta de detalle se superpone sobre la que estuviera activa (práctica o colección) con el patrón estándar de "ruta de fondo" (`location.state.backgroundLocation`); un enlace directo o una recarga cae en práctica. Las palabras relacionadas dentro del panel son `<Link>` reales a su propia ruta, así que se puede ir saltando de un kanji a otro.
+
+Se usa `BrowserRouter` (no `HashRouter`) para tener URLs limpias. Como GitHub Pages no reescribe rutas del lado del servidor, `public/404.html` implementa el truco estándar de [rafgraph/spa-github-pages](https://github.com/rafgraph/spa-github-pages): GitHub sirve ese 404 para cualquier ruta profunda (`/katacan/collection`, `/katacan/word/...`), que redirige a `index.html` codificando la ruta real en la query string; un script en `index.html` la restaura con `history.replaceState` antes de que React Router la lea. Así un enlace directo o una recarga en cualquier ruta funcionan igual que navegar dentro de la app.
 
 ## Despliegue
 
